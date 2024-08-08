@@ -2,32 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+::selection {
+  text-shadow: none;
+  color: #fff;
+  background-color: #00f;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+html {
+  /* Make base font-size 100% of browser font-size */
+  font-size: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth; /* Smoothly animate to different sections within a page, only if the user doesn't mind animations */
   }
+}
+
+*,
+*::before,
+*::after,
+html {
+  box-sizing: border-box;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  font-family: 'Mulish', sans-serif, serif, monospace, cursive, fantasy;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+img {
+  height: auto;
+  max-width: 100%;
+  user-select: none;
+}
+
+button {
+  color: inherit; /* By default, buttons don't inherit the font colour, this is a useful default to override */
+}
+
+a,
+button {
+  touch-action: manipulation; /* Element doesn't want double-tap on mobile to zoom */
+}
+
+svg {
+  height: 100%;
+  width: 100%;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+iframe,
+video {
+  height: 100%;
+  width: 100%;
 }
