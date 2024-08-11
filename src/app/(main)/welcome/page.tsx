@@ -1,12 +1,15 @@
 'use client';
+import LogoutButton from '@/components/LogoutButton';
 import { Button, ConfigProvider, Layout, Typography } from 'antd';
+import axios from 'axios';
 import { signOut, useSession } from 'next-auth/react';
 import React from 'react';
 
 export default function Page() {
   const { data: session, status } = useSession();
   console.log(session);
-  const getKeycloakToken = () => {};
+  // const getKeycloakToken = () => {};
+
   return (
     <ConfigProvider
       theme={{
@@ -29,23 +32,8 @@ export default function Page() {
               <pre>{JSON.stringify(session, null, 2)}</pre>
             </Typography>
           </div>
-          <Button
-            className="bg-[#00af43]"
-            type="primary"
-            onClick={() => {
-              getKeycloakToken();
-            }}
-          >
-            Get Keycloak Token
-          </Button>
-          <Button
-            type="default"
-            onClick={() => {
-              signOut();
-            }}
-          >
-            Logout
-          </Button>
+
+          <LogoutButton />
         </div>
       </Layout>
     </ConfigProvider>
