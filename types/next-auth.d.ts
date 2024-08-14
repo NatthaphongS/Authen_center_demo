@@ -10,6 +10,7 @@ declare module 'next-auth' {
         expires_in: number;
         refresh_expires_in: number;
         refresh_token: string;
+        id_token: string;
       };
     } & DefaultSession['user'];
   }

@@ -1,6 +1,4 @@
-import { Button, Form, FormProps, Input } from 'antd';
-import { FieldNamesType } from 'antd/es/cascader';
-import axios from 'axios';
+import { Button, Form, FormProps, Input, message } from 'antd';
 import { signIn } from 'next-auth/react';
 import React from 'react';
 
@@ -12,6 +10,9 @@ export default function LoginForm() {
         redirect: false,
       });
       console.log(resultLogin);
+      if (resultLogin?.status === 401) {
+        message.error('ไม่พบผู้ใช้ในระบบ,รหัสผ่านไม่ถูกต้อง');
+      }
     } catch (error) {
       console.error('Error:', error);
     }
@@ -21,18 +22,18 @@ export default function LoginForm() {
     <Form onFinish={onFinish} layout="vertical" size="large">
       <Form.Item
         name={'username'}
-        rules={[{ required: true, message: 'Please input your username!' }]}
+        rules={[{ required: true, message: 'โปรดป้อนเบอร์โทร/อีเมล' }]}
       >
-        <Input placeholder="Username" />
+        <Input placeholder="หมายเลขโทรศัพท์/อีเมล" />
       </Form.Item>
       <Form.Item
         name={'password'}
-        rules={[{ required: true, message: 'Please input your password!' }]}
+        rules={[{ required: true, message: 'โปรกป้อนรหัสผ่าน' }]}
       >
-        <Input type="password" placeholder="Password" />
+        <Input.Password placeholder="รหัสผ่าน" />
       </Form.Item>
       <Button className="w-full bg-[#00af43]" type="primary" htmlType="submit">
-        Login
+        เข้าสู่ระบบ
       </Button>
     </Form>
   );

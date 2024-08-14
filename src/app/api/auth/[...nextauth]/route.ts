@@ -10,15 +10,7 @@ const keycloakTokenBaseUrl = `${process.env.KEYCLOAK_BASE_URL}/realms/${process.
 
 // resource for get token data
 const keycloakTokenDataBaseUrl = `${process.env.KEYCLOAK_BASE_URL}/realms/${process.env.KEYCLOAK_REALM_NAME}/protocol/openid-connect/token/introspect`;
-
-async function credentialToKeyCloakTokens({
-  username,
-  password,
-}: {
-  username: string;
-  password: string;
-}) {}
-
+const keycloakUserInfoEndpoint = `${process.env.KEYCLOAK_BASE_URL}/realms/${process.env.KEYCLOAK_REALM_NAME}/protocol/openid-connect/userinfo`;
 async function exchangeToKeycloakTokens({
   provider,
   externalAccessToken,
@@ -33,6 +25,7 @@ async function exchangeToKeycloakTokens({
       client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
       subject_issuer: provider,
       subject_token: externalAccessToken,
+      scope: 'openid',
     });
     const keycloakTokenResponse = await axios.post(
       keycloakTokenBaseUrl,
@@ -72,6 +65,17 @@ async function getTokenInfo(keycloakAccessToken: string) {
   }
 }
 
+async function getUserInfo(accessToken: string) {
+  try {
+    const userInfoResponse = await axios.get(keycloakUserInfoEndpoint, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return userInfoResponse.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function requestRefreshOfAccessToken(refreshToken: string) {
   try {
     const { data: newKeycloakTokens } = await axios.post(
@@ -81,6 +85,7 @@ async function requestRefreshOfAccessToken(refreshToken: string) {
         client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
+        scope: 'openid',
       }),
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
@@ -94,16 +99,17 @@ async function requestRefreshOfAccessToken(refreshToken: string) {
 export const authOptions: AuthOptions = {
   providers: [
     // (use for keycloak login flow)
-    KeycloakProvider({
-      clientId: process.env.KEYCLOAK_CLIENT_ID,
-      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-      issuer: process.env.KEYCLOAK_ISSUER,
-    }),
+    // KeycloakProvider({
+    //   clientId: process.env.KEYCLOAK_CLIENT_ID,
+    //   clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+    //   issuer: process.env.KEYCLOAK_ISSUER,
+    // }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       async profile(profile, tokens) {
         // exchange token
+        console.log('after get google');
         if (!tokens.access_token) {
           throw new Error('Invalid google token');
         }
@@ -115,14 +121,14 @@ export const authOptions: AuthOptions = {
           if (!keycloakTokens.access_token) {
             throw new Error('Exchange token error');
           }
-          const keycloakTokenInfo = await getTokenInfo(
+          const keycloakUserInfo = await getUserInfo(
             keycloakTokens.access_token
           );
-
-          // Assuming you want to attach the Keycloak token to the user object
+          const userId = keycloakUserInfo.sub;
+          delete keycloakUserInfo.sub;
           return {
-            id: keycloakTokenInfo.sub,
-            ...keycloakTokenInfo,
+            id: userId,
+            ...keycloakUserInfo,
             keycloakTokens,
           };
         } catch (error) {
@@ -142,12 +148,14 @@ export const authOptions: AuthOptions = {
           if (!credentials) {
             throw new Error('Invalid credential');
           }
-          const params = new URLSearchParams();
-          params.append('grant_type', 'password');
-          params.append('client_id', process.env.KEYCLOAK_CLIENT_ID);
-          params.append('client_secret', process.env.KEYCLOAK_CLIENT_SECRET);
-          params.append('username', credentials.username);
-          params.append('password', credentials.password);
+          const params = new URLSearchParams({
+            grant_type: 'password',
+            client_id: process.env.KEYCLOAK_CLIENT_ID,
+            client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
+            scope: 'openid',
+            username: credentials.username,
+            password: credentials.password,
+          });
           const { data: keycloakTokens } = await axios.post(
             keycloakTokenBaseUrl,
             params,
@@ -160,13 +168,14 @@ export const authOptions: AuthOptions = {
           if (!keycloakTokens.access_token) {
             throw new Error('Authentication Error');
           }
-          const keycloakTokenInfo = await getTokenInfo(
+          const keycloakUserInfo = await getUserInfo(
             keycloakTokens.access_token
           );
-
+          const userId = keycloakUserInfo.sub;
+          delete keycloakUserInfo.sub;
           return {
-            id: keycloakTokenInfo.sub,
-            ...keycloakTokenInfo,
+            id: userId,
+            ...keycloakUserInfo,
             keycloakTokens,
           };
         } catch (error) {
@@ -176,6 +185,10 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
+  pages: {
+    signIn: '/', // Custom sign-in page
+    error: '/', // Custom error page
+  },
   session: { strategy: 'jwt' },
   callbacks: {
     // jwt call before session
@@ -183,7 +196,6 @@ export const authOptions: AuthOptions = {
       if (user) {
         token = { ...user };
       }
-
       return token;
     },
     async session({ session, token, user }) {

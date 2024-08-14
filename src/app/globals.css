@@ -60,3 +60,12 @@ video {
   height: 100%;
   width: 100%;
 }
+
+.customBoxShadow {
+  background: linear-gradient(
+    180deg,
+    rgb(236, 236, 236) 50%,
+    rgba(34, 34, 34, 1) 110%
+  );
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 0px 40px;
+}
