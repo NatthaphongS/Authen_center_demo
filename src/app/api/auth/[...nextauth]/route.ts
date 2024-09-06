@@ -1,9 +1,8 @@
 import { AuthOptions } from 'next-auth';
 import NextAuth from 'next-auth/next';
-import KeycloakProvider from 'next-auth/providers/keycloak';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialProvider from 'next-auth/providers/credentials';
-import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 
 // resource for get token
 const keycloakTokenBaseUrl = `${process.env.KEYCLOAK_BASE_URL}/realms/${process.env.KEYCLOAK_REALM_NAME}/protocol/openid-connect/token`;
@@ -27,7 +26,7 @@ async function exchangeToKeycloakTokens({
       subject_token: externalAccessToken,
       scope: 'openid',
     });
-    const keycloakTokenResponse = await axios.post(
+    const keycloakTokenResponse = await axiosInstance.post(
       keycloakTokenBaseUrl,
       reqTokenParams,
       {
@@ -50,7 +49,7 @@ async function getTokenInfo(keycloakAccessToken: string) {
       client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
       token: keycloakAccessToken,
     });
-    const keycloakTokenDataResponse = await axios.post(
+    const keycloakTokenDataResponse = await axiosInstance.post(
       keycloakTokenDataBaseUrl,
       reqTokenDataParams,
       {
@@ -67,7 +66,7 @@ async function getTokenInfo(keycloakAccessToken: string) {
 
 async function getUserInfo(accessToken: string) {
   try {
-    const userInfoResponse = await axios.get(keycloakUserInfoEndpoint, {
+    const userInfoResponse = await axiosInstance.get(keycloakUserInfoEndpoint, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     return userInfoResponse.data;
@@ -78,7 +77,7 @@ async function getUserInfo(accessToken: string) {
 
 async function requestRefreshOfAccessToken(refreshToken: string) {
   try {
-    const { data: newKeycloakTokens } = await axios.post(
+    const { data: newKeycloakTokens } = await axiosInstance.post(
       keycloakTokenBaseUrl,
       new URLSearchParams({
         client_id: process.env.KEYCLOAK_CLIENT_ID,
@@ -156,7 +155,7 @@ export const authOptions: AuthOptions = {
             username: credentials.username,
             password: credentials.password,
           });
-          const { data: keycloakTokens } = await axios.post(
+          const { data: keycloakTokens } = await axiosInstance.post(
             keycloakTokenBaseUrl,
             params,
             {

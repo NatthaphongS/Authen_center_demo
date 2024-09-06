@@ -1,22 +1,22 @@
-import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 import { NextRequest, NextResponse } from 'next/server';
-import { emit } from 'process';
 
 const keycloakTokenBaseUrl = `${process.env.KEYCLOAK_BASE_URL}/realms/${process.env.KEYCLOAK_REALM_NAME}/protocol/openid-connect/token`;
 const keycloakCreateUserEndpoint = `${process.env.KEYCLOAK_BASE_URL}/admin/realms/${process.env.KEYCLOAK_REALM_NAME}/users`;
 
 async function getAdminAccessToken(): Promise<string> {
-  const { data: adminToken } = await axios.post(
+  const { data: adminToken } = await axiosInstance.post(
     keycloakTokenBaseUrl,
     {
       grant_type: 'client_credentials',
       client_id: 'admin-cli',
-      client_secret: 'gRCubmM3dtjdM7ZZW3B63QIn9pQ1iEdG', // If your client requires a secret
+      client_secret: process.env.KEYCLOAK_ADMIN_CLI_CLIENT_SECRET, // If your client requires a secret
     },
     {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     }
   );
+  console.log('Admin Token :', adminToken);
   return adminToken.access_token;
 }
 
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
     console.log(data);
     const adminAccessToken = await getAdminAccessToken();
-    const createUserKCResponse = await axios.post(
+    const createUserKCResponse = await axiosInstance.post(
       keycloakCreateUserEndpoint,
       {
         username: data.phoneNumber,

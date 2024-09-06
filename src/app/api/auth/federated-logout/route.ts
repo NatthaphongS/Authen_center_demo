@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 import { NextRequest, NextResponse } from 'next/server';
 
 async function sendEndSessionEndpointToURL(refreshToken: string) {
@@ -10,11 +10,15 @@ async function sendEndSessionEndpointToURL(refreshToken: string) {
   });
 
   try {
-    const response = await axios.post(endSessionEndPoint, endSessionParams, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
+    const response = await axiosInstance.post(
+      endSessionEndPoint,
+      endSessionParams,
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
 
     if (response.status === 204) {
       return new NextResponse(null, { status: 204 }); // No content on successful logout
