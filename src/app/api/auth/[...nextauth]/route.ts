@@ -4,105 +4,13 @@ import GoogleProvider from 'next-auth/providers/google';
 import CredentialProvider from 'next-auth/providers/credentials';
 import axiosInstance from '@/lib/axios';
 
-// resource for get token
-const keycloakTokenBaseUrl = `${process.env.KEYCLOAK_BASE_URL}/realms/${process.env.KEYCLOAK_REALM_NAME}/protocol/openid-connect/token`;
-
-// resource for get token data
-const keycloakTokenDataBaseUrl = `${process.env.KEYCLOAK_BASE_URL}/realms/${process.env.KEYCLOAK_REALM_NAME}/protocol/openid-connect/token/introspect`;
-const keycloakUserInfoEndpoint = `${process.env.KEYCLOAK_BASE_URL}/realms/${process.env.KEYCLOAK_REALM_NAME}/protocol/openid-connect/userinfo`;
-async function exchangeToKeycloakTokens({
-  provider,
-  externalAccessToken,
-}: {
-  provider: string;
-  externalAccessToken: string;
-}) {
-  try {
-    const reqTokenParams = new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
-      client_id: process.env.KEYCLOAK_CLIENT_ID,
-      client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
-      subject_issuer: provider,
-      subject_token: externalAccessToken,
-      scope: 'openid',
-    });
-    const keycloakTokenResponse = await axiosInstance.post(
-      keycloakTokenBaseUrl,
-      reqTokenParams,
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      }
-    );
-    return keycloakTokenResponse.data;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-}
-
-async function getTokenInfo(keycloakAccessToken: string) {
-  try {
-    const reqTokenDataParams = new URLSearchParams({
-      client_id: process.env.KEYCLOAK_CLIENT_ID,
-      client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
-      token: keycloakAccessToken,
-    });
-    const keycloakTokenDataResponse = await axiosInstance.post(
-      keycloakTokenDataBaseUrl,
-      reqTokenDataParams,
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      }
-    );
-    return keycloakTokenDataResponse.data;
-  } catch (error) {
-    throw error;
-  }
-}
-
-async function getUserInfo(accessToken: string) {
-  try {
-    const userInfoResponse = await axiosInstance.get(keycloakUserInfoEndpoint, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    return userInfoResponse.data;
-  } catch (error) {
-    throw error;
-  }
-}
-
-async function requestRefreshOfAccessToken(refreshToken: string) {
-  try {
-    const { data: newKeycloakTokens } = await axiosInstance.post(
-      keycloakTokenBaseUrl,
-      new URLSearchParams({
-        client_id: process.env.KEYCLOAK_CLIENT_ID,
-        client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken,
-        scope: 'openid',
-      }),
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-    );
-    return newKeycloakTokens;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
+export enum LoginType {
+  EMAIL = 'email',
+  PHONE_NUMBER = 'phoneNumber',
 }
 
 export const authOptions: AuthOptions = {
   providers: [
-    // (use for keycloak login flow)
-    // KeycloakProvider({
-    //   clientId: process.env.KEYCLOAK_CLIENT_ID,
-    //   clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-    //   issuer: process.env.KEYCLOAK_ISSUER,
-    // }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -113,70 +21,26 @@ export const authOptions: AuthOptions = {
           throw new Error('Invalid google token');
         }
         try {
-          const keycloakTokens = await exchangeToKeycloakTokens({
-            provider: 'google',
-            externalAccessToken: tokens.access_token,
-          });
-          if (!keycloakTokens.access_token) {
-            throw new Error('Exchange token error');
-          }
-          const keycloakUserInfo = await getUserInfo(
-            keycloakTokens.access_token
-          );
-          const userId = keycloakUserInfo.sub;
-          delete keycloakUserInfo.sub;
-          return {
-            id: userId,
-            ...keycloakUserInfo,
-            keycloakTokens,
-          };
+          console.log('Google token', tokens);
+          return { id: profile.sub, tokens };
         } catch (error) {
-          console.error('Keycloak token exchange failed:', error);
-          throw new Error('Keycloak token exchange failed');
+          console.error('Login with google failed : ', error);
+          throw new Error('Login with google failed');
         }
       },
     }),
     CredentialProvider({
-      name: 'CredentialsToKeycloak',
+      name: 'Credentials',
       credentials: {
+        loginType: { label: 'Login type', type: 'text' },
         username: { label: 'Username', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials, req) {
         try {
-          if (!credentials) {
-            throw new Error('Invalid credential');
-          }
-          const params = new URLSearchParams({
-            grant_type: 'password',
-            client_id: process.env.KEYCLOAK_CLIENT_ID,
-            client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
-            scope: 'openid',
-            username: credentials.username,
-            password: credentials.password,
-          });
-          const { data: keycloakTokens } = await axiosInstance.post(
-            keycloakTokenBaseUrl,
-            params,
-            {
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-              },
-            }
-          );
-          if (!keycloakTokens.access_token) {
-            throw new Error('Authentication Error');
-          }
-          const keycloakUserInfo = await getUserInfo(
-            keycloakTokens.access_token
-          );
-          const userId = keycloakUserInfo.sub;
-          delete keycloakUserInfo.sub;
-          return {
-            id: userId,
-            ...keycloakUserInfo,
-            keycloakTokens,
-          };
+          console.log('credentials', credentials);
+          const tokens = { id: '1', access_Token: 'aaa', refresh_token: 'rrr' };
+          return tokens;
         } catch (error) {
           console.error('Error:', error);
           return null;
@@ -185,23 +49,22 @@ export const authOptions: AuthOptions = {
     }),
   ],
   pages: {
-    signIn: '/', // Custom sign-in page
-    error: '/', // Custom error page
+    signIn: '/',
+    error: '/',
   },
   session: { strategy: 'jwt' },
   callbacks: {
     // jwt call before session
     async jwt({ token, user, account, profile }) {
-      if (user) {
-        token = { ...user };
-      }
-      return token;
+      console.log('token', token);
+      console.log('account', account);
+
+      return { ...token, ...account };
     },
     async session({ session, token, user }) {
-      if (session.user) {
-        session.user = token;
-      }
-      return session;
+      console.log('session', session);
+      console.log('token', token);
+      return { ...session, ...token };
     },
   },
 };

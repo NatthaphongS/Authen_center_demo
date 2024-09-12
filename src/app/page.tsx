@@ -19,7 +19,7 @@ export default function Page() {
       <Layout className="bg-white p-[1rem] w-screen h-screen flex items-center justify-center">
         <div className="w-[20rem] flex flex-col gap-5 max-h-min rounded-lg p-5 bg-zinc-100/50 customBoxShadow">
           <div className="text-[2rem] text-center font-semibold">
-            Demo keycloak 1
+            Authentication Center
           </div>
           <div className="flex flex-col gap-2 justify-center">
             <LoginForm />

@@ -13,16 +13,17 @@ export default function LogoutButton() {
     }
 
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/auth/federated-logout`,
-        { refreshToken: session.user.keycloakTokens?.refresh_token } // Safely access refresh_token
-      );
-      console.log(response);
-      if (response.status === 204) {
-        signOut();
-      } else {
-        console.error('Failed to log out:', response.data);
-      }
+      // const response = await axios.post(
+      //   `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/auth/federated-logout`,
+      //   { refreshToken: session.user.keycloakTokens?.refresh_token } // Safely access refresh_token
+      // );
+      // console.log(response);
+      // if (response.status === 204) {
+      //   signOut();
+      // } else {
+      //   console.error('Failed to log out:', response.data);
+      // }
+      signOut();
     } catch (error) {
       console.error('Logout failed:', error);
     }
