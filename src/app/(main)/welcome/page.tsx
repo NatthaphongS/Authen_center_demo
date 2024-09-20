@@ -1,17 +1,18 @@
 'use client';
 import LogoutButton from '@/components/LogoutButton';
 import { ConfigProvider, Layout, Typography, Spin } from 'antd';
+import { Session } from 'inspector';
 import { useSession, getSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
 
 export default function Page() {
-  const { data: session, status } = useSession();
   const [isSessionReady, setSessionReady] = useState(false);
+  const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
     async function checkSession() {
       const sessionData = await getSession(); // Manually fetch session
-      console.log('Manual session fetch:', sessionData);
+      setSession(sessionData);
       setSessionReady(!!sessionData);
     }
 
