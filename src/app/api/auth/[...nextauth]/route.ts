@@ -4,11 +4,6 @@ import GoogleProvider from 'next-auth/providers/google';
 import CredentialProvider from 'next-auth/providers/credentials';
 import axiosInstance from '@/lib/axios';
 
-export enum LoginType {
-  EMAIL = 'email',
-  PHONE_NUMBER = 'phoneNumber',
-}
-
 export const authOptions: AuthOptions = {
   providers: [
     GoogleProvider({
