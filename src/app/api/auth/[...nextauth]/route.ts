@@ -53,8 +53,14 @@ const authOptions: AuthOptions = {
     async jwt({ token, user, account, profile }) {
       console.log('token', token);
       console.log('account', account);
+      if (account && user) {
+        token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
+        token.user = user;
+      }
 
-      return { ...token, ...account };
+      // For returning user sessions, ensure you keep the data
+      return token;
     },
     async session({ session, token, user }) {
       console.log('session', session);
