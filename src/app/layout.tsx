@@ -8,8 +8,8 @@ import AuthProvider from '@/context/AuthProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Demo 1',
-  description: 'test keycloak with demo app 1',
+  title: 'Authentication demo',
+  description: 'demo project for help to test api',
 };
 
 export default async function RootLayout({
