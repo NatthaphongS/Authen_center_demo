@@ -9,20 +9,20 @@ const authOptions: AuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      async profile(profile, tokens) {
-        // exchange token
-        console.log('after get google');
-        if (!tokens.access_token) {
-          throw new Error('Invalid google token');
-        }
-        try {
-          console.log('Google token', tokens);
-          return { id: profile.sub, tokens };
-        } catch (error) {
-          console.error('Login with google failed : ', error);
-          throw new Error('Login with google failed');
-        }
-      },
+      // async profile(profile, tokens) {
+      //   // exchange token
+      //   console.log('after get google');
+      //   if (!tokens.access_token) {
+      //     throw new Error('Invalid google token');
+      //   }
+      //   try {
+      //     console.log('Google token', tokens);
+      //     return { id: profile.sub, tokens };
+      //   } catch (error) {
+      //     console.error('Login with google failed : ', error);
+      //     throw new Error('Login with google failed');
+      //   }
+      // },
     }),
     CredentialProvider({
       name: 'Credentials',
