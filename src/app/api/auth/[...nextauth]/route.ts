@@ -62,10 +62,13 @@ const authOptions: AuthOptions = {
       // For returning user sessions, ensure you keep the data
       return token;
     },
-    async session({ session, token, user }) {
-      console.log('session', session);
-      console.log('token', token);
-      return { ...session, ...token };
+    async session({ session, token }) {
+      // Attach the token data to the session object
+      session.accessToken = token.accessToken;
+      session.refreshToken = token.refreshToken;
+      session.user = token.user || {};
+
+      return session;
     },
   },
 };
