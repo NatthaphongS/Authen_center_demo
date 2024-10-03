@@ -10,20 +10,6 @@ const authOptions: AuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      // async profile(profile, tokens) {
-      //   // exchange token
-      //   console.log('after get google');
-      //   if (!tokens.access_token) {
-      //     throw new Error('Invalid google token');
-      //   }
-      //   try {
-      //     console.log('Google token', tokens);
-      //     return { id: profile.sub, tokens };
-      //   } catch (error) {
-      //     console.error('Login with google failed : ', error);
-      //     throw new Error('Login with google failed');
-      //   }
-      // },
     }),
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID,
@@ -38,7 +24,6 @@ const authOptions: AuthOptions = {
       },
       async authorize(credentials, req) {
         try {
-          console.log('credentials', credentials);
           const tokens = { id: '1', access_Token: 'aaa', refresh_token: 'rrr' };
           return tokens;
         } catch (error) {
@@ -56,8 +41,6 @@ const authOptions: AuthOptions = {
   callbacks: {
     // jwt call before session
     async jwt({ token, user, account, profile }) {
-      console.log('token', token);
-      console.log('account', account);
       if (account && user) {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;

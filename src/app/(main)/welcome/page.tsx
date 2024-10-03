@@ -1,8 +1,7 @@
 'use client';
 import LogoutButton from '@/components/LogoutButton';
 import { ConfigProvider, Layout, Typography, Spin } from 'antd';
-import { Session } from 'inspector';
-import { useSession, getSession } from 'next-auth/react';
+import { getSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
 
 export default function Page() {
@@ -18,9 +17,6 @@ export default function Page() {
 
     checkSession();
   }, []);
-
-  console.log('STATUS', status);
-  console.log('SESSION', session);
 
   if (!isSessionReady) {
     return (
