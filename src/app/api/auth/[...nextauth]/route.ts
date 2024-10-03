@@ -1,6 +1,7 @@
 import { AuthOptions } from 'next-auth';
 import NextAuth from 'next-auth/next';
 import GoogleProvider from 'next-auth/providers/google';
+import FacebookProvider from 'next-auth/providers/facebook';
 import CredentialProvider from 'next-auth/providers/credentials';
 import axiosInstance from '@/lib/axios';
 
@@ -23,6 +24,10 @@ const authOptions: AuthOptions = {
       //     throw new Error('Login with google failed');
       //   }
       // },
+    }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
     }),
     CredentialProvider({
       name: 'Credentials',
